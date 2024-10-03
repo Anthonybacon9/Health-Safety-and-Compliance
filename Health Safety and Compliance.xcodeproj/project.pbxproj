@@ -6,6 +6,12 @@
 	objectVersion = 77;
 	objects = {
 
+/* Begin PBXBuildFile section */
+		64EBAEE72CAEE77400DF8E45 /* FirebaseAuth in Frameworks */ = {isa = PBXBuildFile; productRef = 64EBAEE62CAEE77400DF8E45 /* FirebaseAuth */; };
+		64EBAEE92CAEE77400DF8E45 /* FirebaseCore in Frameworks */ = {isa = PBXBuildFile; productRef = 64EBAEE82CAEE77400DF8E45 /* FirebaseCore */; };
+		64EBAEEB2CAEE77400DF8E45 /* FirebaseFirestore in Frameworks */ = {isa = PBXBuildFile; productRef = 64EBAEEA2CAEE77400DF8E45 /* FirebaseFirestore */; };
+/* End PBXBuildFile section */
+
 /* Begin PBXContainerItemProxy section */
 		64EBAE6A2CAE951300DF8E45 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
@@ -29,9 +35,30 @@
 		64EBAE732CAE951300DF8E45 /* Health Safety and ComplianceUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = "Health Safety and ComplianceUITests.xctest"; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
+/* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
+		64EBAEF22CAEE85000DF8E45 /* Exceptions for "Health Safety and Compliance" folder in "Health Safety and ComplianceTests" target */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				"GoogleService-Info.plist",
+			);
+			target = 64EBAE682CAE951300DF8E45 /* Health Safety and ComplianceTests */;
+		};
+		64EBAEF32CAEE85000DF8E45 /* Exceptions for "Health Safety and Compliance" folder in "Health Safety and ComplianceUITests" target */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				"GoogleService-Info.plist",
+			);
+			target = 64EBAE722CAE951300DF8E45 /* Health Safety and ComplianceUITests */;
+		};
+/* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
+
 /* Begin PBXFileSystemSynchronizedRootGroup section */
 		64EBAE5B2CAE951100DF8E45 /* Health Safety and Compliance */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
+			exceptions = (
+				64EBAEF22CAEE85000DF8E45 /* Exceptions for "Health Safety and Compliance" folder in "Health Safety and ComplianceTests" target */,
+				64EBAEF32CAEE85000DF8E45 /* Exceptions for "Health Safety and Compliance" folder in "Health Safety and ComplianceUITests" target */,
+			);
 			path = "Health Safety and Compliance";
 			sourceTree = "<group>";
 		};
@@ -52,6 +79,9 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				64EBAEE92CAEE77400DF8E45 /* FirebaseCore in Frameworks */,
+				64EBAEE72CAEE77400DF8E45 /* FirebaseAuth in Frameworks */,
+				64EBAEEB2CAEE77400DF8E45 /* FirebaseFirestore in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -112,6 +142,9 @@
 			);
 			name = "Health Safety and Compliance";
 			packageProductDependencies = (
+				64EBAEE62CAEE77400DF8E45 /* FirebaseAuth */,
+				64EBAEE82CAEE77400DF8E45 /* FirebaseCore */,
+				64EBAEEA2CAEE77400DF8E45 /* FirebaseFirestore */,
 			);
 			productName = "Health Safety and Compliance";
 			productReference = 64EBAE592CAE951100DF8E45 /* Health Safety and Compliance.app */;
@@ -195,6 +228,9 @@
 			);
 			mainGroup = 64EBAE502CAE951100DF8E45;
 			minimizedProjectReferenceProxies = 1;
+			packageReferences = (
+				64EBAEE52CAEE77400DF8E45 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */,
+			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = 64EBAE5A2CAE951100DF8E45 /* Products */;
 			projectDirPath = "";
@@ -560,6 +596,35 @@
 			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
+
+/* Begin XCRemoteSwiftPackageReference section */
+		64EBAEE52CAEE77400DF8E45 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/firebase/firebase-ios-sdk";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 11.3.0;
+			};
+		};
+/* End XCRemoteSwiftPackageReference section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		64EBAEE62CAEE77400DF8E45 /* FirebaseAuth */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 64EBAEE52CAEE77400DF8E45 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */;
+			productName = FirebaseAuth;
+		};
+		64EBAEE82CAEE77400DF8E45 /* FirebaseCore */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 64EBAEE52CAEE77400DF8E45 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */;
+			productName = FirebaseCore;
+		};
+		64EBAEEA2CAEE77400DF8E45 /* FirebaseFirestore */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 64EBAEE52CAEE77400DF8E45 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */;
+			productName = FirebaseFirestore;
+		};
+/* End XCSwiftPackageProductDependency section */
 	};
 	rootObject = 64EBAE512CAE951100DF8E45 /* Project object */;
 }
