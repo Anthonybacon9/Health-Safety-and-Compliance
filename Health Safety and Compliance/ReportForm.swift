@@ -17,7 +17,7 @@ struct ReportForm: View {
 
     var body: some View {
         VStack {
-            Picker("Background Colour", selection: $report) {
+            Picker("Report", selection: $report) {
                 ForEach(ReportType.allCases, id: \.self) { colour in
                     Text(colour.rawValue)
                 }
@@ -32,6 +32,7 @@ struct ReportForm: View {
                     RoundedRectangle(cornerRadius: 10)
                         .stroke()
                 )
+            
             TextField("Surname", text: $lastName)
                 .padding()
                 .autocapitalization(.none)
@@ -46,7 +47,8 @@ struct ReportForm: View {
                     RoundedRectangle(cornerRadius: 10)
                         .stroke()
                 )
-        }.frame(width: 380)
+        }.padding(10)
+        
         
     }
 }

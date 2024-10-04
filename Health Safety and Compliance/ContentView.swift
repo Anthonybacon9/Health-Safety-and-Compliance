@@ -25,13 +25,22 @@ struct ContentView: View {
     
     @State private var selectedTab = 0
     var body: some View {
-        NavigationView {
+//        NavigationView {
             ZStack {
                 VStack {
+                    HStack {
+                        Image("NEPng")
+                            .resizable()
+                            .frame(width: 30, height: 30)
+                            .foregroundStyle(.green)
+                        
+                    }.frame(width: 380, height: 50)
+                        .padding(.vertical, 1)
+                    
                     TabView(selection: $selectedTab) {
                         SignIn()
                             .tabItem {
-                                Label("Sign In", systemImage: "person.crop.circle.fill.badge.checkmark")
+                                Label("Register", systemImage: "person.crop.circle.fill.badge.checkmark")
                             }
                             .tag(0)
                             .onAppear() {
@@ -41,6 +50,11 @@ struct ContentView: View {
                             .tag(1)
                             .tabItem {
                                 Label("Report", systemImage: "bandage.fill")
+                            }
+                        UserProfile()
+                            .tag(2)
+                            .tabItem {
+                                Label("Profile", systemImage: "person.crop.circle.fill")
                             }
                     }.accentColor(.green)
                 }
@@ -64,7 +78,7 @@ struct ContentView: View {
                             
                     }
                 }
-        }.accentColor(.orange)
+//        }.accentColor(.orange)
     }
     private func setupTabBarAppearance() {
             let appearance = UITabBarAppearance()
