@@ -15,11 +15,10 @@ struct UserProfile: View {
     @AppStorage("uid") var userId: String = ""
     
     @State private var isCreatingAccount: Bool = false
-    @State private var isChangingPassword: Bool = false
+    @State private var isShowingPasswordChange: Bool = false
     @State private var newPassword: String = ""
-    @State private var currentPassword: String = ""
-    @State private var reenteredPassword: String = ""
-    
+    @State private var confirmNewPassword: String = ""
+
     var body: some View {
         VStack {
             if isAuthenticated {
@@ -33,7 +32,45 @@ struct UserProfile: View {
                     Text("Welcome, \(username)")
                         .font(.title)
                         .fontWeight(.bold)
-                    
+
+                    // Change Password Button
+                    Button(action: { isShowingPasswordChange = true }) {
+                        Text("Change Password")
+                            .foregroundColor(.white)
+                            .padding()
+                            .frame(width: 200)
+                            .background(Color.orange)
+                            .cornerRadius(8)
+                    }
+                    .popover(isPresented: $isShowingPasswordChange) {
+                        VStack(spacing: 20) {
+                            Text("Change Password")
+                                .font(.headline)
+                            
+                            SecureField("New Password", text: $newPassword)
+                                .textFieldStyle(RoundedBorderTextFieldStyle())
+                            
+                            SecureField("Confirm New Password", text: $confirmNewPassword)
+                                .textFieldStyle(RoundedBorderTextFieldStyle())
+                            
+                            if let error = errorMessage {
+                                Text(error)
+                                    .foregroundColor(.red)
+                                    .font(.footnote)
+                            }
+
+                            Button(action: updatePassword) {
+                                Text("Update Password")
+                                    .foregroundColor(.white)
+                                    .padding()
+                                    .frame(width: 200)
+                                    .background(Color.blue)
+                                    .cornerRadius(8)
+                            }
+                        }
+                        .padding()
+                    }
+
                     Button(action: signOut) {
                         Text("Sign Out")
                             .foregroundColor(.white)
@@ -42,42 +79,91 @@ struct UserProfile: View {
                             .background(Color.red)
                             .cornerRadius(8)
                     }
-                    
-                    // Change Password Section
-                    if isChangingPassword {
-                        VStack(spacing: 15) {
-                            SecureField("Current Password", text: $currentPassword)
-                                .textFieldStyle(RoundedBorderTextFieldStyle())
-                            SecureField("New Password", text: $newPassword)
-                                .textFieldStyle(RoundedBorderTextFieldStyle())
-                            SecureField("Re-enter New Password", text: $reenteredPassword)
-                                .textFieldStyle(RoundedBorderTextFieldStyle())
-                            
-                            Button(action: changePassword) {
-                                Text("Update Password")
-                                    .foregroundColor(.white)
-                                    .padding()
-                                    .frame(width: 200)
-                                    .background(Color.green)
-                                    .cornerRadius(8)
-                            }
-                            
-                            if let error = errorMessage {
-                                Text(error)
-                                    .foregroundColor(.red)
-                                    .font(.footnote)
-                            }
-                        }
-                    } else {
-                        Button(action: { isChangingPassword = true }) {
-                            Text("Change Password")
-                                .foregroundColor(.blue)
-                        }
-                    }
                 }
                 .padding()
             } else {
-                // Existing Sign-In and Sign-Up Forms (no changes here)
+                if isCreatingAccount {
+                    // Sign-Up Form
+                    VStack(spacing: 20) {
+                        Text("Create Account")
+                            .font(.title)
+                            .fontWeight(.bold)
+                        
+                        TextField("First Name", text: $firstName)
+                            .textFieldStyle(RoundedBorderTextFieldStyle())
+                        
+                        TextField("Last Name", text: $lastName)
+                            .textFieldStyle(RoundedBorderTextFieldStyle())
+                        
+                        TextField("Email", text: $email)
+                            .textFieldStyle(RoundedBorderTextFieldStyle())
+                            .keyboardType(.emailAddress)
+                            .autocapitalization(.none)
+                        
+                        SecureField("Password", text: $password)
+                            .textFieldStyle(RoundedBorderTextFieldStyle())
+                        
+                        SecureField("Confirm Password", text: $confirmPassword)
+                            .textFieldStyle(RoundedBorderTextFieldStyle())
+                        
+                        if let error = errorMessage {
+                            Text(error)
+                                .foregroundColor(.red)
+                                .font(.footnote)
+                        }
+
+                        Button(action: createAccount) {
+                            Text("Create Account")
+                                .foregroundColor(.white)
+                                .padding()
+                                .frame(width: 200)
+                                .background(Color.blue)
+                                .cornerRadius(8)
+                        }
+
+                        Button(action: { isCreatingAccount = false }) {
+                            Text("Already have an account? Sign In")
+                                .foregroundColor(.blue)
+                        }
+                    }
+                    .padding()
+                } else {
+                    // Sign-In Form
+                    VStack(spacing: 20) {
+                        Text("Sign In")
+                            .font(.title)
+                            .fontWeight(.bold)
+                        
+                        TextField("Email", text: $email)
+                            .textFieldStyle(RoundedBorderTextFieldStyle())
+                            .keyboardType(.emailAddress)
+                            .autocapitalization(.none)
+                        
+                        SecureField("Password", text: $password)
+                            .textFieldStyle(RoundedBorderTextFieldStyle())
+                        
+                        if let error = errorMessage {
+                            Text(error)
+                                .foregroundColor(.red)
+                                .font(.footnote)
+                        }
+
+                        Button(action: signIn) {
+                            Text("Sign In")
+                                .foregroundColor(.white)
+                                .padding()
+                                .frame(width: 200)
+                                .background(Color.blue)
+                                .cornerRadius(8)
+                        }
+
+                        Button(action: { isCreatingAccount = true }) {
+                            Text("Don't have an account? Create one")
+                                .foregroundColor(.blue)
+                        }
+                    }
+                    .padding()
+                }
             }
         }
         .onAppear {
@@ -86,33 +172,6 @@ struct UserProfile: View {
                 username = user.displayName ?? user.email ?? "Unknown User"
                 userId = user.uid // Store the uid
                 isAuthenticated = true
-            }
-        }
-    }
-    
-    // Function to handle password change
-    private func changePassword() {
-        guard newPassword == reenteredPassword else {
-            errorMessage = "New passwords do not match."
-            return
-        }
-        
-        // Reauthenticate the user with their current password before updating
-        let credential = EmailAuthProvider.credential(withEmail: email, password: currentPassword)
-        Auth.auth().currentUser?.reauthenticate(with: credential) { result, error in
-            if let error = error {
-                errorMessage = "Reauthentication failed: \(error.localizedDescription)"
-                return
-            }
-            
-            // Proceed to update the password
-            Auth.auth().currentUser?.updatePassword(to: newPassword) { error in
-                if let error = error {
-                    errorMessage = "Failed to update password: \(error.localizedDescription)"
-                } else {
-                    errorMessage = "Password updated successfully."
-                    isChangingPassword = false
-                }
             }
         }
     }
@@ -196,6 +255,23 @@ struct UserProfile: View {
                 errorMessage = "Error saving user data: \(error.localizedDescription)"
             } else {
                 print("User data successfully saved!")
+            }
+        }
+    }
+
+    // Firebase Password Update Function
+    private func updatePassword() {
+        guard newPassword == confirmNewPassword else {
+            errorMessage = "New passwords do not match."
+            return
+        }
+
+        Auth.auth().currentUser?.updatePassword(to: newPassword) { error in
+            if let error = error {
+                errorMessage = "Failed to update password: \(error.localizedDescription)"
+            } else {
+                isShowingPasswordChange = false
+                print("Password successfully updated!")
             }
         }
     }
