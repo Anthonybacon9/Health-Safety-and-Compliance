@@ -23,6 +23,8 @@ struct ReportForm: View {
                 }
             }.pickerStyle(.segmented)
             
+            Spacer()
+            
             Text(report.rawValue)
             
             TextField("Forename", text: $firstName)
@@ -47,6 +49,7 @@ struct ReportForm: View {
                     RoundedRectangle(cornerRadius: 10)
                         .stroke()
                 )
+            Spacer()
         }.padding(10)
         
         

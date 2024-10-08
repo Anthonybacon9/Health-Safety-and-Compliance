@@ -58,13 +58,20 @@ class SignInManager: ObservableObject {
         }
     }
     
-    // Fetch sign-in records for today and the current user
-    func fetchSignInRecords() {
-        let today = Calendar.current.startOfDay(for: Date())
-        
-        db.collection("signInRecords")
-            .whereField("userID", isEqualTo: userId)
-            .getDocuments { [weak self] (querySnapshot, error) in
+    // Fetch sign-in records based on admin view
+    func fetchSignInRecords(isAdmin: Bool) {
+            let today = Calendar.current.startOfDay(for: Date())
+            let query: Query
+
+            if isAdmin {
+                // Admin can see all sign-in records
+                query = db.collection("signInRecords")
+            } else {
+                // Non-admin can see only their sign-in records
+                query = db.collection("signInRecords").whereField("userID", isEqualTo: userId)
+            }
+
+            query.getDocuments { [weak self] (querySnapshot, error) in
                 guard let self = self else { return }
                 
                 if let error = error {
@@ -74,8 +81,11 @@ class SignInManager: ObservableObject {
                         self.signInRecords = snapshot.documents.compactMap { document in
                             let data = document.data()
                             if let timeString = data["time"] as? String,
-                               let time = self.parseTime(from: timeString),
-                               Calendar.current.startOfDay(for: time) == today {
+                               let time = self.parseTime(from: timeString) {
+                                // Filter records for today if not admin
+                                if !isAdmin && Calendar.current.startOfDay(for: time) != today {
+                                    return nil
+                                }
                                 return SignInRecord(
                                     time: timeString,
                                     location: data["location"] as? String ?? "N/A",
@@ -91,7 +101,7 @@ class SignInManager: ObservableObject {
                     }
                 }
             }
-    }
+        }
     
     private func parseTime(from timeString: String) -> Date? {
         let dateFormatter = DateFormatter()

@@ -25,9 +25,10 @@ struct SignIn: View {
     @AppStorage("firstName") var firstName: String = ""
     @AppStorage("lastName") var lastName: String = ""
     @AppStorage("uid") var userId: String = ""
+    @AppStorage("isAdmin") var isAdmin: Bool = false
     
-    @State private var signInManager: SignInManager? // Make it an optional
-    
+    @State private var adminView: Bool = false
+    @State private var signInManager: SignInManager?
     @State private var selectedContract: Contract?
     
     let contracts = [
@@ -45,58 +46,103 @@ struct SignIn: View {
     
     var body: some View {
         VStack {
-            Menu {
-                ForEach(contracts) { contract in
-                    Button(action: {
-                        selectedContract = contract
-                    }) {
-                        Text(contract.name)
+            HStack {
+                Menu {
+                    ForEach(contracts) { contract in
+                        Button(action: {
+                            selectedContract = contract
+                        }) {
+                            Text(contract.name)
+                        }
+                    }
+                } label: {
+                    Text(selectedContract?.name ?? "Select Contract")
+                    Image(systemName: "chevron.down")
+                }
+                if isAdmin {
+                    Spacer()
+                    Button {
+                        adminView.toggle()
+                        signInManager?.fetchSignInRecords(isAdmin: adminView) // Fetch records based on admin view status
+                    } label: {
+                        Text("See all")
+                            .foregroundStyle(.blue)
+                        Image(systemName: adminView ? "checkmark.circle.fill" : "circle")
+                            .foregroundStyle(.blue)
                     }
                 }
-            } label: {
-                Text(selectedContract?.name ?? "Select Contract")
-                Image(systemName: "chevron.down")
-            }
+            }.padding(.horizontal)
             
             if selectedContract != nil {
                 Button(action: {
-                    signedIn.toggle()
+                    withAnimation(.easeInOut(duration: 0.3)) {
+                        signedIn.toggle()
+                    }
                     let time = signInManager?.formatDate(date: Date()) ?? ""
                     let location = locationManager.userAddress ?? "Location unavailable"
                     let status = signedIn ? "Signing In" : "Signing Out"
                     let contractName = selectedContract?.name ?? "No Contract Selected"
                     
                     signInManager?.addSignInRecord(time: time, location: location, status: status, contractName: contractName)
-                }, label: {
-                    Circle()
-                        .frame(width: 100, height: 100)
-                        .overlay {
-                            Text(signedIn ? "Sign Out" : "Sign In")
-                                .foregroundColor(.white)
-                        }
-                        .padding()
-                })
-                .foregroundColor(signedIn ? .red : .green)
+                }) {
+                    HStack {
+                        Image(systemName: signedIn ? "person.fill.checkmark" : "person.fill")
+                            .font(.system(size: 24))
+                            .foregroundColor(.white)
+                            .scaleEffect(signedIn ? 1.2 : 1.0)  // Scale effect for the icon
+                            .transition(.opacity)
+                            .animation(.easeInOut(duration: 0.3), value: signedIn)
+                        
+                        Text(signedIn ? "Sign Out" : "Sign In")
+                            .font(.headline)
+                            .foregroundColor(.white)
+                            .padding(.leading, 5)
+                    }
+                    .padding()
+                    .frame(maxWidth: .infinity)
+                    .background(
+                        RoundedRectangle(cornerRadius: 12)
+                            .fill(
+                                LinearGradient(gradient: Gradient(colors: signedIn ? [.red, .orange] : [.green, .blue]),
+                                               startPoint: .leading,
+                                               endPoint: .trailing)
+                            )
+                    )
+                    .shadow(color: signedIn ? Color.red.opacity(0.5) : Color.green.opacity(0.5), radius: 10, x: 0, y: 5)
+                    .padding(.horizontal, 16)
+                    .padding(.vertical, 15)
+                    .scaleEffect(signedIn ? 1.05 : 1.0)
+                    .animation(.easeInOut(duration: 0.3), value: signedIn)
+                }
                 .disabled(!isAuthenticated)
             } else {
-                Circle()
-                    .frame(width: 100, height: 100)
-                    .overlay {
-                        Text(signedIn ? "Sign Out" : "Sign In")
-                            .foregroundColor(.white)
-                    }
+                Text("Select a contract to sign in")
+                    .italic()
+                    .font(.subheadline)
+                    .foregroundColor(.gray)
                     .padding()
             }
             
             Divider()
             
+            // Display the sign-in records based on admin view status
             List(signInManager?.signInRecords ?? []) { record in
                 VStack(alignment: .leading) {
-                    Text("\(record.time)")
-                    Text("Location: \(record.location)").font(.subheadline).foregroundColor(.gray)
-                    Text("Status: \(record.status)").font(.subheadline).foregroundColor(.blue)
-                    Text("Contract: \(record.contract)").font(.subheadline).foregroundColor(.purple)
-                    Text("Name: \(record.firstName) \(record.lastName)").font(.subheadline).foregroundColor(.orange)
+                    Text("\(record.firstName) \(record.lastName)")
+                        .font(.headline)
+                        .foregroundColor(.orange)
+                    Text("Contract: \(record.contract)")
+                        .font(.subheadline)
+                        .foregroundColor(.purple)
+                    Text("Status: \(record.status)")
+                        .font(.subheadline)
+                        .foregroundColor(.blue)
+                    Text("Location: \(record.location)")
+                        .font(.subheadline)
+                        .foregroundColor(.gray)
+                    Text("Time: \(record.time)")
+                        .font(.caption)
+                        .foregroundColor(.secondary)
                 }
             }
             .listStyle(PlainListStyle())
@@ -105,7 +151,7 @@ struct SignIn: View {
         .onAppear {
             // Initialize the signInManager when the view appears
             signInManager = SignInManager(userId: userId, firstName: firstName, lastName: lastName)
-            signInManager?.fetchSignInRecords()
+            signInManager?.fetchSignInRecords(isAdmin: adminView) // Fetch records on appear
         }
     }
 }

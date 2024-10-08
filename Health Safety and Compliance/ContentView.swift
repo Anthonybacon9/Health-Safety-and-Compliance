@@ -10,8 +10,6 @@ import CoreLocation
 
 //MARK: TO DO
 //When not signed in, open popover on loadup
-//Have a button that updates the database with a new sign in
-//Use geolocation to know where user is. DONE
 //store all user information securely in the database
 //have a dropdown menu for all subcontractors, and use the database to display active subcontractors.
 //Accident reporting - autofills data saved from user profile
@@ -24,6 +22,8 @@ struct ContentView: View {
     }
     
     @State private var selectedTab = 0
+    @AppStorage("isAdmin") var isAdmin: Bool = false
+    
     var body: some View {
 //        NavigationView {
             ZStack {
@@ -33,8 +33,13 @@ struct ContentView: View {
                             .resizable()
                             .frame(width: 30, height: 30)
                             .foregroundStyle(.green)
+                        Text("NextEnergy")
+                            .font(Font.custom("Poppins-Medium", size: 18))
+                            .fontWeight(.bold)
+                            .foregroundStyle(.green)
                         
-                    }.frame(width: 380, height: 50)
+                    }
+                    .frame(width: 380, height: 50)
                         .padding(.vertical, 1)
                     
                     TabView(selection: $selectedTab) {
@@ -46,15 +51,17 @@ struct ContentView: View {
                             .onAppear() {
                                 
                             }
-                        ReportForm()
-                            .tag(1)
-                            .tabItem {
-                                Label("Report", systemImage: "bandage.fill")
-                            }
+                        if isAdmin {
+                            ReportForm()
+                                .tag(1)
+                                .tabItem {
+                                    Label("Report", systemImage: "bandage.fill")
+                                }
+                        }
                         UserProfile()
                             .tag(2)
                             .tabItem {
-                                Label("Profile", systemImage: "person.crop.circle.fill")
+                                Label("Profile", systemImage: "person.fill")
                             }
                     }.accentColor(.green)
                 }

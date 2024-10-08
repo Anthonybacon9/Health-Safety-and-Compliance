@@ -13,6 +13,7 @@ struct UserProfile: View {
     @AppStorage("firstName") var firstName: String = ""
     @AppStorage("lastName") var lastName: String = ""
     @AppStorage("uid") var userId: String = ""
+    @AppStorage("isAdmin") var isAdmin: Bool = false
     
     @State private var isCreatingAccount: Bool = false
     @State private var isShowingPasswordChange: Bool = false
@@ -24,62 +25,67 @@ struct UserProfile: View {
             if isAuthenticated {
                 // Profile Information
                 VStack(spacing: 20) {
-                    Image(systemName: "person.circle.fill")
-                        .resizable()
-                        .frame(width: 120, height: 120)
-                        .foregroundColor(.green)
+//                    Image(systemName: "person.circle.fill")
+//                        .resizable()
+//                        .frame(width: 120, height: 120)
+//                        .foregroundColor(.green)
                     
-                    Text("Welcome, \(username)")
-                        .font(.title)
-                        .fontWeight(.bold)
+                    VStack {
+                        Text("Welcome,")
+                            .font(.headline)
+                            .frame(width: 200, alignment: .leading)
+                            .fontWeight(.bold)
+                        Text("\(username)")
+                            .font(.title)
+                            .fontWeight(.bold)
+                        
+                        Text("Is Admin: \(isAdmin)")
+                    }
+                    
 
                     // Change Password Button
-                    Button(action: { isShowingPasswordChange = true }) {
-                        Text("Change Password")
-                            .foregroundColor(.white)
-                            .padding()
-                            .frame(width: 200)
-                            .background(Color.orange)
-                            .cornerRadius(8)
-                    }
-                    .popover(isPresented: $isShowingPasswordChange) {
-                        VStack(spacing: 20) {
+                    HStack {
+                        Button(action: { isShowingPasswordChange = true }) {
                             Text("Change Password")
-                                .font(.headline)
-                            
-                            SecureField("New Password", text: $newPassword)
-                                .textFieldStyle(RoundedBorderTextFieldStyle())
-                            
-                            SecureField("Confirm New Password", text: $confirmNewPassword)
-                                .textFieldStyle(RoundedBorderTextFieldStyle())
-                            
-                            if let error = errorMessage {
-                                Text(error)
-                                    .foregroundColor(.red)
-                                    .font(.footnote)
-                            }
-
-                            Button(action: updatePassword) {
-                                Text("Update Password")
-                                    .foregroundColor(.white)
-                                    .padding()
-                                    .frame(width: 200)
-                                    .background(Color.blue)
-                                    .cornerRadius(8)
-                            }
+                                .foregroundColor(.orange)
+                                .padding()
                         }
-                        .padding()
-                    }
-
-                    Button(action: signOut) {
-                        Text("Sign Out")
-                            .foregroundColor(.white)
+                        .popover(isPresented: $isShowingPasswordChange) {
+                            VStack(spacing: 20) {
+                                Text("Change Password")
+                                    .font(.headline)
+                                
+                                SecureField("New Password", text: $newPassword)
+                                    .textFieldStyle(RoundedBorderTextFieldStyle())
+                                
+                                SecureField("Confirm New Password", text: $confirmNewPassword)
+                                    .textFieldStyle(RoundedBorderTextFieldStyle())
+                                
+                                if let error = errorMessage {
+                                    Text(error)
+                                        .foregroundColor(.red)
+                                        .font(.footnote)
+                                }
+                                
+                                Button(action: updatePassword) {
+                                    Text("Update Password")
+                                        .foregroundColor(.white)
+                                        .padding()
+                                        .frame(width: 200)
+                                        .background(Color.blue)
+                                        .cornerRadius(8)
+                                }
+                            }
                             .padding()
-                            .frame(width: 200)
-                            .background(Color.red)
-                            .cornerRadius(8)
+                        }
+                        Button(action: signOut) {
+                            Text("Sign Out")
+                                .foregroundColor(.red)
+                                .padding()
+                        }
                     }
                 }
+                //Spacer()
                 .padding()
             } else {
                 if isCreatingAccount {
@@ -201,6 +207,7 @@ struct UserProfile: View {
                 let data = document.data()
                 firstName = data?["firstName"] as? String ?? "No First Name"
                 lastName = data?["lastName"] as? String ?? "No Last Name"
+                isAdmin = data?["isAdmin"] as? Bool ?? false
             } else {
                 print("Document does not exist")
             }
@@ -288,6 +295,7 @@ struct UserProfile: View {
             firstName = ""
             lastName = ""
             userId = ""
+            isAdmin = false
         } catch {
             errorMessage = "Failed to sign out: \(error.localizedDescription)"
         }
