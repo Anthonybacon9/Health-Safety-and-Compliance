@@ -19,36 +19,91 @@ struct UserProfile: View {
     @State private var isShowingPasswordChange: Bool = false
     @State private var newPassword: String = ""
     @State private var confirmNewPassword: String = ""
-
+    
+    @State private var inviteCode: String = ""
+    @State private var inputInviteCode: String = ""
+    @State private var generatedInviteCode: String = ""
+    @State private var isShowingInviteCodeError: Bool = false
+    
     var body: some View {
         VStack {
             if isAuthenticated {
                 // Profile Information
-                VStack(spacing: 20) {
-//                    Image(systemName: "person.circle.fill")
-//                        .resizable()
-//                        .frame(width: 120, height: 120)
-//                        .foregroundColor(.green)
-                    
+                VStack(spacing: 30) {
+                    // Profile Image & Welcome Message
                     VStack {
-                        Text("Welcome,")
-                            .font(.headline)
-                            .frame(width: 200, alignment: .leading)
-                            .fontWeight(.bold)
+                        Image(systemName: "person.circle.fill")
+                            .resizable()
+                            .frame(width: 100, height: 100)
+                            .foregroundColor(.green)
+                            .shadow(radius: 5)
+                        
                         Text("\(username)")
                             .font(.title)
                             .fontWeight(.bold)
+                            .padding(.top, 10)
                         
-                        Text("Is Admin: \(isAdmin)")
+                        Text(isAdmin ? "Administrator" : "User")
+                            .font(.subheadline)
+                            .foregroundColor(.gray)
+                    }
+                    .padding(.top, 40)
+                    
+                    Divider()
+                    
+                    // Invite Code Section for Admin
+                    if isAdmin {
+                        VStack(alignment: .leading, spacing: 10) {
+                            HStack {
+                                if generatedInviteCode.isEmpty {
+                                    Text("Generate invite code")
+                                        .foregroundStyle(.secondary)
+                                } else {
+                                    HStack {
+                                        Text(generatedInviteCode)
+                                            .font(.system(.body, design: .monospaced))
+                                            .bold()
+                                        
+                                        Button(action: {
+                                            UIPasteboard.general.string = generatedInviteCode
+                                        }) {
+                                            Image(systemName: "doc.on.doc")
+                                                .foregroundColor(.blue)
+                                        }
+                                        .padding(.leading, 8)
+                                    }
+                                    .transition(.opacity)
+                                }
+                                
+                                Spacer()
+                                
+                                Button(action: generateInviteCode) {
+                                    Text("Generate")
+                                        .foregroundColor(.white)
+                                        .padding(.vertical, 10)
+                                        .padding(.horizontal, 20)
+                                        .background(Color.green)
+                                        .cornerRadius(10)
+                                        .shadow(radius: 5)
+                                }
+                            }
+                            .padding()
+                            .background(.ultraThinMaterial)
+                            .cornerRadius(15)
+                            .shadow(radius: 5)
+                            .animation(.easeInOut, value: generatedInviteCode)
+                        }
                     }
                     
-
-                    // Change Password Button
-                    HStack {
+                    // Account Management (Change Password & Sign Out)
+                    VStack(spacing: 15) {
                         Button(action: { isShowingPasswordChange = true }) {
-                            Text("Change Password")
-                                .foregroundColor(.orange)
-                                .padding()
+                            HStack {
+                                Image(systemName: "key.fill")
+                                    .foregroundColor(.orange)
+                                Text("Change Password")
+                                    .foregroundColor(.orange)
+                            }
                         }
                         .popover(isPresented: $isShowingPasswordChange) {
                             VStack(spacing: 20) {
@@ -78,14 +133,21 @@ struct UserProfile: View {
                             }
                             .padding()
                         }
+                        
                         Button(action: signOut) {
-                            Text("Sign Out")
-                                .foregroundColor(.red)
-                                .padding()
+                            HStack {
+                                Image(systemName: "arrowshape.turn.up.left.fill")
+                                    .foregroundColor(.red)
+                                Text("Sign Out")
+                                    .foregroundColor(.red)
+                            }
+                            .padding(.top, 10)
                         }
                     }
+                    .padding(.top, 20)
+                    
+                    Spacer()
                 }
-                //Spacer()
                 .padding()
             } else {
                 if isCreatingAccount {
@@ -94,6 +156,15 @@ struct UserProfile: View {
                         Text("Create Account")
                             .font(.title)
                             .fontWeight(.bold)
+                        
+                        TextField("Invite Code", text: $inputInviteCode)
+                            .textFieldStyle(RoundedBorderTextFieldStyle())
+                        
+                        if isShowingInviteCodeError {
+                            Text("Invalid or expired invite code.")
+                                .foregroundColor(.red)
+                                .font(.footnote)
+                        }
                         
                         TextField("First Name", text: $firstName)
                             .textFieldStyle(RoundedBorderTextFieldStyle())
@@ -117,8 +188,8 @@ struct UserProfile: View {
                                 .foregroundColor(.red)
                                 .font(.footnote)
                         }
-
-                        Button(action: createAccount) {
+                        
+                        Button(action: validateInviteCodeAndCreateAccount) {
                             Text("Create Account")
                                 .foregroundColor(.white)
                                 .padding()
@@ -126,7 +197,7 @@ struct UserProfile: View {
                                 .background(Color.blue)
                                 .cornerRadius(8)
                         }
-
+                        
                         Button(action: { isCreatingAccount = false }) {
                             Text("Already have an account? Sign In")
                                 .foregroundColor(.blue)
@@ -153,7 +224,7 @@ struct UserProfile: View {
                                 .foregroundColor(.red)
                                 .font(.footnote)
                         }
-
+                        
                         Button(action: signIn) {
                             Text("Sign In")
                                 .foregroundColor(.white)
@@ -162,7 +233,7 @@ struct UserProfile: View {
                                 .background(Color.blue)
                                 .cornerRadius(8)
                         }
-
+                        
                         Button(action: { isCreatingAccount = true }) {
                             Text("Don't have an account? Create one")
                                 .foregroundColor(.blue)
@@ -181,7 +252,47 @@ struct UserProfile: View {
             }
         }
     }
-
+    
+    private func generateInviteCode() {
+        let code = UUID().uuidString.prefix(8) // Generates a random 8-character code
+        let db = Firestore.firestore()
+        
+        db.collection("inviteCodes").document(String(code)).setData([
+            "code": code,
+            "isUsed": false // If you want to make it reusable, change logic accordingly
+        ]) { error in
+            if let error = error {
+                print("Error creating invite code: \(error.localizedDescription)")
+            } else {
+                generatedInviteCode = String(code)
+                print("Invite code generated successfully!")
+            }
+        }
+    }
+    
+    
+    private func validateInviteCodeAndCreateAccount() {
+        let db = Firestore.firestore()
+        db.collection("inviteCodes").document(inputInviteCode).getDocument { document, error in
+            if let document = document, document.exists {
+                let data = document.data()
+                let isUsed = data?["isUsed"] as? Bool ?? true
+                
+                if !isUsed {
+                    // If valid, create the account
+                    createAccount()
+                    
+                    // Mark the invite code as used if needed (optional)
+                    db.collection("inviteCodes").document(inputInviteCode).updateData(["isUsed": true])
+                } else {
+                    isShowingInviteCodeError = true
+                }
+            } else {
+                isShowingInviteCodeError = true
+            }
+        }
+    }
+    
     // Firebase Sign-In Function
     private func signIn() {
         Auth.auth().signIn(withEmail: email, password: password) { authResult, error in
@@ -189,12 +300,12 @@ struct UserProfile: View {
                 errorMessage = error.localizedDescription
                 return
             }
-
+            
             if let user = authResult?.user {
                 username = user.displayName ?? user.email ?? "Unknown User"
                 userId = user.uid // Save the uid
                 isAuthenticated = true
-
+                
                 fetchUserData(userId: user.uid)
             }
         }
@@ -220,7 +331,7 @@ struct UserProfile: View {
             errorMessage = "Passwords do not match."
             return
         }
-
+        
         Auth.auth().createUser(withEmail: email, password: password) { authResult, error in
             if let error = error {
                 errorMessage = error.localizedDescription
@@ -246,7 +357,7 @@ struct UserProfile: View {
             }
         }
     }
-
+    
     // Function to save user data to Firestore
     private func saveUserData(userId: String) {
         let db = Firestore.firestore()
@@ -256,7 +367,7 @@ struct UserProfile: View {
             "email": email,
             "uid": userId
         ]
-
+        
         db.collection("users").document(userId).setData(userData) { error in
             if let error = error {
                 errorMessage = "Error saving user data: \(error.localizedDescription)"
@@ -265,14 +376,14 @@ struct UserProfile: View {
             }
         }
     }
-
+    
     // Firebase Password Update Function
     private func updatePassword() {
         guard newPassword == confirmNewPassword else {
             errorMessage = "New passwords do not match."
             return
         }
-
+        
         Auth.auth().currentUser?.updatePassword(to: newPassword) { error in
             if let error = error {
                 errorMessage = "Failed to update password: \(error.localizedDescription)"
@@ -282,7 +393,7 @@ struct UserProfile: View {
             }
         }
     }
-
+    
     // Firebase Sign-Out Function
     private func signOut() {
         do {

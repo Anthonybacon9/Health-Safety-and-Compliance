@@ -94,7 +94,7 @@ struct SignIn: View {
                             .animation(.easeInOut(duration: 0.3), value: signedIn)
                         
                         Text(signedIn ? "Sign Out" : "Sign In")
-                            .font(.headline)
+                            .font(Font.custom("Poppins-Medium", size: 18))
                             .foregroundColor(.white)
                             .padding(.leading, 5)
                     }
