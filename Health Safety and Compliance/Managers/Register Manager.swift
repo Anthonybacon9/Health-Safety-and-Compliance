@@ -58,6 +58,52 @@ class SignInManager: ObservableObject {
         }
     }
     
+    func filterRecordsByDate(selectedDate: Date, isAdmin: Bool) {
+        let calendar = Calendar.current
+        let selectedDayStart = calendar.startOfDay(for: selectedDate)
+        let selectedDayEnd = calendar.date(byAdding: .day, value: 1, to: selectedDayStart)!
+
+        var query: Query = db.collection("signInRecords")
+            .whereField("time", isGreaterThanOrEqualTo: formatDate(date: selectedDayStart))
+            .whereField("time", isLessThanOrEqualTo: formatDate(date: selectedDayEnd))
+
+        if !isAdmin {
+            // For non-admins, restrict records to their own userId
+            query = query.whereField("userID", isEqualTo: userId)
+        }
+
+        query.getDocuments { [weak self] (querySnapshot, error) in
+            guard let self = self else { return }
+
+            if let error = error {
+                print("Error fetching documents: \(error)")
+            } else if let snapshot = querySnapshot {
+                DispatchQueue.main.async {
+                    self.signInRecords = snapshot.documents.compactMap { document in
+                        let data = document.data()
+                        if let timeString = data["time"] as? String,
+                           let time = self.parseTime(from: timeString),
+                           calendar.isDate(time, inSameDayAs: selectedDate) {
+                            return SignInRecord(
+                                time: timeString,
+                                location: data["location"] as? String ?? "N/A",
+                                status: data["status"] as? String ?? "N/A",
+                                contract: data["contract"] as? String ?? "N/A",
+                                firstName: data["firstName"] as? String ?? "N/A",
+                                lastName: data["lastName"] as? String ?? "N/A"
+                            )
+                        }
+                        return nil
+                    }
+                    // Sort by time in descending order
+                    .sorted { self.parseTime(from: $0.time)! > self.parseTime(from: $1.time)! }
+                }
+            }
+        }
+    }
+    
+    
+    
     // Fetch sign-in records based on admin view
     func fetchSignInRecords(isAdmin: Bool) {
             let today = Calendar.current.startOfDay(for: Date())

@@ -56,7 +56,7 @@ struct UserProfile: View {
                         VStack(alignment: .leading, spacing: 10) {
                             HStack {
                                 if generatedInviteCode.isEmpty {
-                                    Text("Generate invite code")
+                                    Text("Generate team code")
                                         .foregroundStyle(.secondary)
                                 } else {
                                     HStack {
@@ -92,6 +92,14 @@ struct UserProfile: View {
                             .cornerRadius(15)
                             .shadow(radius: 5)
                             .animation(.easeInOut, value: generatedInviteCode)
+                            
+                            Text("*Generate a code for a subcontractor to distribute to their team.")
+                                .font(.footnote)  // Smaller font to make it subtle
+                                .foregroundColor(.gray.opacity(0.8))  // Lighter gray to blend in, but still legible
+                                .italic()  // Italicized to differentiate from the main content
+                                .padding(.top, 4)  // Slight padding to give it breathing room
+                                .padding(.horizontal, 6)  // Padding on the sides for better alignment
+                                .multilineTextAlignment(.leading)  // Align text for readability
                         }
                     }
                     
@@ -283,7 +291,7 @@ struct UserProfile: View {
                     createAccount()
                     
                     // Mark the invite code as used if needed (optional)
-                    db.collection("inviteCodes").document(inputInviteCode).updateData(["isUsed": true])
+                    //db.collection("inviteCodes").document(inputInviteCode).updateData(["isUsed": true])
                 } else {
                     isShowingInviteCodeError = true
                 }
@@ -365,7 +373,9 @@ struct UserProfile: View {
             "firstName": firstName,
             "lastName": lastName,
             "email": email,
-            "uid": userId
+            "uid": userId,
+            "isAdmin": false,
+            "invCode" : inputInviteCode
         ]
         
         db.collection("users").document(userId).setData(userData) { error in
