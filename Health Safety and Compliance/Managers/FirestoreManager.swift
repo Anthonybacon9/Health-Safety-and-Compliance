@@ -7,18 +7,7 @@
 import Foundation
 import FirebaseFirestore
 
-struct Report {
-    var firstName: String
-    var lastName: String
-    var userId: String
-    var location: String
-    var date: Date
-    var type: ReportType
-    var description: String
-    var severity: String
-    var injuryReported: Bool
-    var witnessNames: String
-}
+
 
 class FirestoreManager {
     private var db = Firestore.firestore()
@@ -33,7 +22,20 @@ class FirestoreManager {
             "description": report.description,
             "severity": report.severity,
             "injuryReported": report.injuryReported,
-            "witnessNames": report.witnessNames
+            "witnessNames": report.witnessNames,
+            "quarterOfFinancialYear": report.quarterOfFinancialYear,
+            "timeOfAccident": report.timeOfAccident,
+            "address": report.address,
+            "phoneNumber": report.phoneNumber,
+            "jobTitle": report.jobTitle,
+            "accidentContract": report.accidentContract,
+            "lineManager": report.lineManager,
+            "employmentDetails": report.employmentDetails,
+            "typeOfInjury": report.typeOfInjury,
+            "partOfBody": report.partOfBody,
+            "personGender": report.personGender,
+            "personAge": report.personAge,
+            "actionsTaken": report.actionsTaken
         ]
         
         // Choose the collection based on the report type

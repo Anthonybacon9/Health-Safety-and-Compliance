@@ -1,5 +1,7 @@
 import SwiftUI
 
+
+
 struct ReportForm: View {
     @AppStorage("firstName") var firstName: String = ""
     @AppStorage("lastName") var lastName: String = ""
@@ -15,6 +17,19 @@ struct ReportForm: View {
     @State private var severity: String = ""
     @State private var witnessNames: String = ""
     @State private var injuryReported: Bool = false
+    @State private var quarterOfFinancialYear: String = ""
+    @State private var timeOfAccident: String = ""
+    @State private var address: String = ""
+    @State private var phoneNumber: String = ""
+    @State private var jobTitle: String = ""
+    @State private var accidentContract: String = ""
+    @State private var lineManager: String = ""
+    @State private var employmentDetails: String = ""
+    @State private var typeOfInjury: String = ""
+    @State private var partOfBody: String = ""
+    @State private var personGender: String = ""
+    @State private var personAge: String = ""
+    @State private var actionsTaken: String = ""
 
     var body: some View {
         ScrollView {
@@ -86,7 +101,20 @@ struct ReportForm: View {
             description: getDescriptionForReportType(),
             severity: severity,
             injuryReported: injuryReported,
-            witnessNames: witnessNames
+            witnessNames: witnessNames,
+            quarterOfFinancialYear: quarterOfFinancialYear,
+            timeOfAccident: timeOfAccident,
+            address: address,
+            phoneNumber: phoneNumber,
+            jobTitle: jobTitle,
+            accidentContract: accidentContract,
+            lineManager: lineManager,
+            employmentDetails: employmentDetails,
+            typeOfInjury: typeOfInjury,
+            partOfBody: partOfBody,
+            personGender: personGender,
+            personAge: personAge,
+            actionsTaken: actionsTaken
         )
         
         let firestoreManager = FirestoreManager()
@@ -120,6 +148,59 @@ struct ReportForm: View {
         TextField("Witness Names (if any)", text: $witnessNames)
             .padding()
             .background(RoundedRectangle(cornerRadius: 10).stroke())
+        
+        // Additional Questions
+        TextField("Quarter of Financial Year", text: $quarterOfFinancialYear)
+            .padding()
+            .background(RoundedRectangle(cornerRadius: 10).stroke())
+        
+        TextField("Time of the Accident", text: $timeOfAccident)
+            .padding()
+            .background(RoundedRectangle(cornerRadius: 10).stroke())
+        
+        TextField("Your Address", text: $address)
+            .padding()
+            .background(RoundedRectangle(cornerRadius: 10).stroke())
+        
+        TextField("Phone Number", text: $phoneNumber)
+            .padding()
+            .background(RoundedRectangle(cornerRadius: 10).stroke())
+        
+        TextField("Job Title", text: $jobTitle)
+            .padding()
+            .background(RoundedRectangle(cornerRadius: 10).stroke())
+        
+        TextField("Accident Contract", text: $accidentContract)
+            .padding()
+            .background(RoundedRectangle(cornerRadius: 10).stroke())
+        
+        TextField("Who is Your Line Manager?", text: $lineManager)
+            .padding()
+            .background(RoundedRectangle(cornerRadius: 10).stroke())
+        
+        TextField("Employment Details (Employee, Subcontractor, or Member of Public)", text: $employmentDetails)
+            .padding()
+            .background(RoundedRectangle(cornerRadius: 10).stroke())
+        
+        TextField("Type of Injury", text: $typeOfInjury)
+            .padding()
+            .background(RoundedRectangle(cornerRadius: 10).stroke())
+        
+        TextField("Part of Body", text: $partOfBody)
+            .padding()
+            .background(RoundedRectangle(cornerRadius: 10).stroke())
+        
+        TextField("Person's Gender", text: $personGender)
+            .padding()
+            .background(RoundedRectangle(cornerRadius: 10).stroke())
+        
+        TextField("Person's Age", text: $personAge)
+            .padding()
+            .background(RoundedRectangle(cornerRadius: 10).stroke())
+        
+        TextField("Describe Actions Taken to Prevent From Happening Again", text: $actionsTaken)
+            .padding()
+            .background(RoundedRectangle(cornerRadius: 10).stroke())
     }
     
     @ViewBuilder
@@ -136,6 +217,59 @@ struct ReportForm: View {
             .padding()
         
         TextField("Witness Names (if any)", text: $witnessNames)
+            .padding()
+            .background(RoundedRectangle(cornerRadius: 10).stroke())
+        
+        // Additional Questions
+        TextField("Quarter of Financial Year", text: $quarterOfFinancialYear)
+            .padding()
+            .background(RoundedRectangle(cornerRadius: 10).stroke())
+        
+        TextField("Time of the Incident", text: $timeOfAccident)
+            .padding()
+            .background(RoundedRectangle(cornerRadius: 10).stroke())
+        
+        TextField("Your Address", text: $address)
+            .padding()
+            .background(RoundedRectangle(cornerRadius: 10).stroke())
+        
+        TextField("Phone Number", text: $phoneNumber)
+            .padding()
+            .background(RoundedRectangle(cornerRadius: 10).stroke())
+        
+        TextField("Job Title", text: $jobTitle)
+            .padding()
+            .background(RoundedRectangle(cornerRadius: 10).stroke())
+        
+        TextField("Incident Contract", text: $accidentContract) // You may want to specify differently for incidents
+            .padding()
+            .background(RoundedRectangle(cornerRadius: 10).stroke())
+        
+        TextField("Who is Your Line Manager?", text: $lineManager)
+            .padding()
+            .background(RoundedRectangle(cornerRadius: 10).stroke())
+        
+        TextField("Employment Details (Employee, Subcontractor, or Member of Public)", text: $employmentDetails)
+            .padding()
+            .background(RoundedRectangle(cornerRadius: 10).stroke())
+        
+        TextField("Type of Injury", text: $typeOfInjury)
+            .padding()
+            .background(RoundedRectangle(cornerRadius: 10).stroke())
+        
+        TextField("Part of Body", text: $partOfBody)
+            .padding()
+            .background(RoundedRectangle(cornerRadius: 10).stroke())
+        
+        TextField("Person's Gender", text: $personGender)
+            .padding()
+            .background(RoundedRectangle(cornerRadius: 10).stroke())
+        
+        TextField("Person's Age", text: $personAge)
+            .padding()
+            .background(RoundedRectangle(cornerRadius: 10).stroke())
+        
+        TextField("Describe Actions Taken to Prevent From Happening Again", text: $actionsTaken)
             .padding()
             .background(RoundedRectangle(cornerRadius: 10).stroke())
     }

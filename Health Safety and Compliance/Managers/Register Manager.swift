@@ -7,9 +7,19 @@
 
 import Foundation
 import FirebaseFirestore
+import SwiftUI
+
+struct User: Identifiable {
+    var id = UUID()
+    var firstName: String
+    var lastName: String
+}
 
 class SignInManager: ObservableObject {
     @Published var signInRecords: [SignInRecord] = []
+    @Published var signedInUsers: [User] = []
+    
+    @AppStorage("signedIn") var signedIn: Bool = false
     
     private let db = Firestore.firestore()
     private let userId: String
@@ -20,6 +30,9 @@ class SignInManager: ObservableObject {
         self.userId = userId
         self.firstName = firstName
         self.lastName = lastName
+        
+        listenForSignInStatus()
+        listenForSignedInUsers()
     }
     
     // Add a new sign-in record
@@ -36,6 +49,103 @@ class SignInManager: ObservableObject {
         signInRecords.insert(newRecord, at: 0)
         saveToFirestore(record: newRecord)
     }
+    
+    func fetchSignedInUsers() {
+        db.collection("users").whereField("isSignedIn", isEqualTo: true).getDocuments { [weak self] (querySnapshot, error) in
+            guard let self = self else { return }
+            
+            if let error = error {
+                print("Error fetching signed-in users: \(error.localizedDescription)")
+                return
+            }
+            
+            if let snapshot = querySnapshot {
+                DispatchQueue.main.async {
+                    self.signedInUsers = snapshot.documents.compactMap { document in
+                        let data = document.data()
+                        if let firstName = data["firstName"] as? String,
+                           let lastName = data["lastName"] as? String {
+                            return User(firstName: firstName, lastName: lastName)
+                        }
+                        return nil
+                    }
+                }
+            }
+        }
+    }
+    
+    private func listenForSignedInUsers() {
+        db.collection("users").whereField("isSignedIn", isEqualTo: true).addSnapshotListener { [weak self] querySnapshot, error in
+            guard let self = self else { return }
+
+            if let error = error {
+                print("Error listening for signed-in users: \(error.localizedDescription)")
+                return
+            }
+
+            guard let snapshot = querySnapshot else {
+                print("Snapshot does not exist")
+                return
+            }
+
+            DispatchQueue.main.async {
+                withAnimation {
+                    self.signedInUsers = snapshot.documents.compactMap { document in
+                        let data = document.data()
+                        if let firstName = data["firstName"] as? String,
+                           let lastName = data["lastName"] as? String {
+                            return User(firstName: firstName, lastName: lastName)
+                        }
+                        return nil
+                    }
+                }
+            }
+        }
+    }
+    
+    func isCurrentUserSignedIn(completion: @escaping (Bool) -> Void) {
+        db.collection("users").document(userId).getDocument { (document, error) in
+            if let error = error {
+                print("Error fetching user document: \(error.localizedDescription)")
+                completion(false)
+                return
+            }
+            
+            guard let document = document, document.exists else {
+                completion(false)
+                return
+            }
+            
+            if let isSignedIn = document.data()?["isSignedIn"] as? Bool {
+                completion(isSignedIn)
+            } else {
+                completion(false) // Default to false if the field does not exist
+            }
+        }
+    }
+    
+    private func listenForSignInStatus() {
+            db.collection("users").document(userId).addSnapshotListener { [weak self] documentSnapshot, error in
+                guard let self = self else { return }
+
+                if let error = error {
+                    print("Error listening for sign-in status: \(error.localizedDescription)")
+                    return
+                }
+
+                guard let document = documentSnapshot else {
+                    print("Document does not exist")
+                    return
+                }
+
+                if let isSignedIn = document.data()?["isSignedIn"] as? Bool {
+                    DispatchQueue.main.async {
+                        self.signedIn = isSignedIn // Update the published property
+                        self.fetchSignedInUsers() // Fetch signed-in users whenever the status changes
+                    }
+                }
+            }
+        }
     
     // Save the record to Firestore
     private func saveToFirestore(record: SignInRecord) {

@@ -375,7 +375,8 @@ struct UserProfile: View {
             "email": email,
             "uid": userId,
             "isAdmin": false,
-            "invCode" : inputInviteCode
+            "invCode" : inputInviteCode,
+            "isSignedIn" : false
         ]
         
         db.collection("users").document(userId).setData(userData) { error in
