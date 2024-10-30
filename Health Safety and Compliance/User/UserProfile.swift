@@ -32,6 +32,9 @@ struct UserProfile: View {
                 VStack(spacing: 30) {
                     // Profile Image & Welcome Message
                     VStack {
+                        Text("ADD AN EDIT DETAILS SECTION ON THIS PAGE")
+                        Text("add reasoning 'for fast and easy completion of forms'")
+                            .foregroundStyle(.red)
                         Image(systemName: "person.circle.fill")
                             .resizable()
                             .frame(width: 100, height: 100)

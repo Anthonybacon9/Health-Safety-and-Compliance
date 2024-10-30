@@ -29,14 +29,14 @@ struct ContentView: View {
             ZStack {
                 VStack {
                     HStack {
-                        Image("NEPng")
+                        Image("image001")
                             .resizable()
-                            .frame(width: 30, height: 30)
+                            .frame(width: 100, height: 35)
                             .foregroundStyle(.green)
-                        Text("NextEnergy")
-                            .font(Font.custom("Poppins-Medium", size: 18))
-                            .fontWeight(.bold)
-                            .foregroundStyle(.green)
+//                        Text("NextEnergy")
+//                            .font(Font.custom("Poppins-Medium", size: 18))
+//                            .fontWeight(.bold)
+//                            .foregroundStyle(.green)
                         
                     }
                     .frame(width: 380, height: 50)
@@ -51,13 +51,12 @@ struct ContentView: View {
                             .onAppear() {
                                 
                             }
-                        if isAdmin {
-                            ReportForm()
-                                .tag(1)
-                                .tabItem {
-                                    Label("Report", systemImage: "bandage.fill")
-                                }
-                        }
+                        ReportForm()
+                            .tag(1)
+                            .tabItem {
+                                Label("Report", systemImage: "bandage.fill")
+                            }
+                        
                         UserProfile()
                             .tag(2)
                             .tabItem {

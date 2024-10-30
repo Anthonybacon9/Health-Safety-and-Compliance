@@ -17,6 +17,21 @@ struct SignInRecord: Identifiable {
     let lastName: String
 }
 
+let contracts = [
+    Contract(name: "ECO4"),
+    Contract(name: "Plus Dane SHDF"),
+    Contract(name: "Torus"),
+    Contract(name: "Livv SHDF"),
+    Contract(name: "Sandwell SHDF"),
+    Contract(name: "WMCA HUG"),
+    Contract(name: "Northumberland HUG"),
+    Contract(name: "Manchester HUG"),
+    Contract(name: "Cheshire East HUG"),
+    Contract(name: "Weaver Vale")
+]
+
+
+
 struct SignIn: View {
     @StateObject private var timeManager = TimeManager()
     @StateObject private var locationManager = LocationManager()
@@ -25,7 +40,7 @@ struct SignIn: View {
     @AppStorage("isAuthenticated") var isAuthenticated: Bool = false
     @AppStorage("firstName") var firstName: String = ""
     @AppStorage("lastName") var lastName: String = ""
-    @AppStorage("uid") var userId: String = ""
+    @AppStorage("uid") var userId: String = "1"
     @AppStorage("isAdmin") var isAdmin: Bool = false
     
     @State private var adminView: Bool = false
@@ -47,51 +62,57 @@ struct SignIn: View {
     @State private var question7Answer = false
     @State private var question8Answer = false
     
-    let contracts = [
-        Contract(name: "ECO4"),
-        Contract(name: "Plus Dane SHDF"),
-        Contract(name: "Torus"),
-        Contract(name: "Livv SHDF"),
-        Contract(name: "Sandwell SHDF"),
-        Contract(name: "WMCA HUG"),
-        Contract(name: "Northumberland HUG"),
-        Contract(name: "Manchester HUG"),
-        Contract(name: "Cheshire East HUG"),
-        Contract(name: "Weaver Vale")
-    ]
+    
     
     fileprivate func setSignInStatus(isSignedIn: Bool) {
-        if let userId = Auth.auth().currentUser?.uid {
-            let db = Firestore.firestore()
-            
-            // Create a timestamp for the current date and time
-            let lastUpdated = Timestamp(date: Date())
-            let contractName = selectedContract?.name ?? "No Contract Selected"
+        guard let userId = Auth.auth().currentUser?.uid else { return }
+        let db = Firestore.firestore()
+
+        // Create a timestamp for the current date and time
+        let lastUpdated = Timestamp(date: Date())
+        let contractName = selectedContract?.name ?? "No Contract Selected"
+
+        if let location = locationManager.userLocation {
+            let latitude = location.coordinate.latitude
+            let longitude = location.coordinate.longitude
+            let signInLocation: [String: Any] = [
+                "latitude": latitude,
+                "longitude": longitude
+            ]
+            let signInAddress = locationManager.userAddress
+
             // Update both 'isSignedIn' and 'lastUpdated' fields
-            
             if isSignedIn {
                 db.collection("users").document(userId).updateData([
                     "isSignedIn": isSignedIn,
                     "lastUpdated": lastUpdated,
-                    "contract": contractName
+                    "contract": contractName,
+                    "signInLocation": signInLocation,
+                    "signInAddress": signInAddress ?? "none"
                 ]) { error in
                     if let error = error {
                         print("Error updating sign-in status: \(error.localizedDescription)")
                     } else {
                         print("User's sign-in status updated to \(isSignedIn ? "true" : "false") at \(lastUpdated).")
                     }
-            }} else {
+                }
+            } else {
                 db.collection("users").document(userId).updateData([
                     "isSignedIn": isSignedIn,
                     "lastUpdated": lastUpdated,
-                    "contract": "None"
+                    "contract": "None",
+                    "signInLocation": "None", // Consider using a similar dictionary format if desired
+                    "signInAddress": "None"
                 ]) { error in
                     if let error = error {
                         print("Error updating sign-in status: \(error.localizedDescription)")
                     } else {
                         print("User's sign-in status updated to \(isSignedIn ? "true" : "false") at \(lastUpdated).")
                     }
-            }}
+                }
+            }
+        } else {
+            print("User location is unavailable.")
         }
     }
     
@@ -320,7 +341,6 @@ struct SignIn: View {
                 // Initialize the signInManager when the view appears
                 signInManager = SignInManager(userId: userId, firstName: firstName, lastName: lastName)
                 signInManager?.fetchSignInRecords(isAdmin: adminView) // Fetch records on appear
-                
             }
         }
         

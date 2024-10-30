@@ -7,6 +7,15 @@ struct ReportForm: View {
     @AppStorage("lastName") var lastName: String = ""
     @AppStorage("uid") var userId: String = ""
     @AppStorage("isAdmin") var isAdmin: Bool = false
+    
+    @State private var selectedContract: Contract?
+    @State private var selectedJob: JobTitle?
+    @State private var selectedGender: Gender?
+    @State private var selectedType: AccType?
+    @State private var selectedBodyPart: BodyPart?
+    @State private var selectedInjury: Injury?
+    @State private var selectedEmployment: Employment?
+    @State private var selectedSeverity: Severity?
 
     @State private var report: ReportType = .accident
     @State private var accidentDescription: String = ""
@@ -17,7 +26,6 @@ struct ReportForm: View {
     @State private var severity: String = ""
     @State private var witnessNames: String = ""
     @State private var injuryReported: Bool = false
-    @State private var quarterOfFinancialYear: String = ""
     @State private var timeOfAccident: String = ""
     @State private var address: String = ""
     @State private var phoneNumber: String = ""
@@ -25,6 +33,7 @@ struct ReportForm: View {
     @State private var accidentContract: String = ""
     @State private var lineManager: String = ""
     @State private var employmentDetails: String = ""
+    @State private var typeOfReport: String = ""
     @State private var typeOfInjury: String = ""
     @State private var partOfBody: String = ""
     @State private var personGender: String = ""
@@ -79,7 +88,7 @@ struct ReportForm: View {
                         .foregroundColor(.white)
                         .padding()
                         .frame(maxWidth: .infinity)
-                        .background(Color.blue)
+                        .background(Color.green)
                         .cornerRadius(10)
                 }
                 .padding(.top)
@@ -99,20 +108,20 @@ struct ReportForm: View {
             date: date,
             type: report,
             description: getDescriptionForReportType(),
-            severity: severity,
+            severity: selectedSeverity?.name ?? "No Severity Selected",
             injuryReported: injuryReported,
             witnessNames: witnessNames,
-            quarterOfFinancialYear: quarterOfFinancialYear,
             timeOfAccident: timeOfAccident,
             address: address,
             phoneNumber: phoneNumber,
-            jobTitle: jobTitle,
-            accidentContract: accidentContract,
+            jobTitle: selectedJob?.name ?? "No Job Selected",
+            accidentContract: selectedContract?.name ?? "No Contract Selected",
             lineManager: lineManager,
-            employmentDetails: employmentDetails,
-            typeOfInjury: typeOfInjury,
-            partOfBody: partOfBody,
-            personGender: personGender,
+            employmentDetails: selectedEmployment?.name ?? "No Employment Selected",
+            typeOfReport: selectedType?.name ?? "No Type Selected",
+            typeOfInjury: selectedInjury?.name ?? "No Injury Selected",
+            partOfBody: selectedBodyPart?.name ?? "No Body Part Selected",
+            personGender: selectedGender?.name ?? "No Gender Selected",
             personAge: personAge,
             actionsTaken: actionsTaken
         )
@@ -138,19 +147,28 @@ struct ReportForm: View {
             .padding()
             .background(RoundedRectangle(cornerRadius: 10).stroke())
         
-        TextField("Reported Severity (e.g., Minor, Moderate, Severe)", text: $severity)
-            .padding()
-            .background(RoundedRectangle(cornerRadius: 10).stroke())
+        //MARK: SEVERITY
+        Menu {
+            ForEach(Severities) { sev in
+                Button(action: {
+                    selectedSeverity = sev
+                }) {
+                    Text(sev.name)
+                }
+            }
+        } label: {
+            HStack {
+                Text(selectedSeverity?.name ?? "Severity")
+                Image(systemName: "chevron.down")
+                Spacer()
+            }.padding()
+                .background(RoundedRectangle(cornerRadius: 10).stroke())
+        }
         
         Toggle("Was there an injury reported?", isOn: $injuryReported)
             .padding()
         
         TextField("Witness Names (if any)", text: $witnessNames)
-            .padding()
-            .background(RoundedRectangle(cornerRadius: 10).stroke())
-        
-        // Additional Questions
-        TextField("Quarter of Financial Year", text: $quarterOfFinancialYear)
             .padding()
             .background(RoundedRectangle(cornerRadius: 10).stroke())
         
@@ -166,33 +184,139 @@ struct ReportForm: View {
             .padding()
             .background(RoundedRectangle(cornerRadius: 10).stroke())
         
-        TextField("Job Title", text: $jobTitle)
-            .padding()
-            .background(RoundedRectangle(cornerRadius: 10).stroke())
         
-        TextField("Accident Contract", text: $accidentContract)
-            .padding()
-            .background(RoundedRectangle(cornerRadius: 10).stroke())
+        //MARK: JOB TITLES
+        Menu {
+            ForEach(jobTitles) { job in
+                Button(action: {
+                    selectedJob = job
+                }) {
+                    Text(job.name)
+                }
+            }
+        } label: {
+            HStack {
+                Text(selectedJob?.name ?? "Job Title")
+                Image(systemName: "chevron.down")
+                Spacer()
+            }.padding()
+                .background(RoundedRectangle(cornerRadius: 10).stroke())
+        }
+        
+        //-----------------
+        
+        //MARK: CONTRACTS
+        Menu {
+            ForEach(contracts) { contract in
+                Button(action: {
+                    selectedContract = contract
+                }) {
+                    Text(contract.name)
+                }
+            }
+        } label: {
+            HStack {
+                Text(selectedContract?.name ?? "Contract")
+                Image(systemName: "chevron.down")
+                Spacer()
+            }.padding()
+                .background(RoundedRectangle(cornerRadius: 10).stroke())
+        }
         
         TextField("Who is Your Line Manager?", text: $lineManager)
             .padding()
             .background(RoundedRectangle(cornerRadius: 10).stroke())
         
-        TextField("Employment Details (Employee, Subcontractor, or Member of Public)", text: $employmentDetails)
-            .padding()
-            .background(RoundedRectangle(cornerRadius: 10).stroke())
+        //MARK: TYPE OF EMPLOYMENT
+        Menu {
+            ForEach(EmploymentDetails) { employ in
+                Button(action: {
+                    selectedEmployment = employ
+                }) {
+                    Text(employ.name)
+                }
+            }
+        } label: {
+            HStack {
+                Text(selectedEmployment?.name ?? "Employment Details")
+                Image(systemName: "chevron.down")
+                Spacer()
+            }.padding()
+                .background(RoundedRectangle(cornerRadius: 10).stroke())
+        }
         
-        TextField("Type of Injury", text: $typeOfInjury)
-            .padding()
-            .background(RoundedRectangle(cornerRadius: 10).stroke())
+        //MARK: TYPE OF ACCIDENT
+        Menu {
+            ForEach(AccTypes) { type in
+                Button(action: {
+                    selectedType = type
+                }) {
+                    Text(type.name)
+                }
+            }
+        } label: {
+            HStack {
+                Text(selectedType?.name ?? "Accident Type")
+                Image(systemName: "chevron.down")
+                Spacer()
+            }.padding()
+                .background(RoundedRectangle(cornerRadius: 10).stroke())
+        }
+
+        //MARK: TYPE OF INJURY
+        Menu {
+            ForEach(Injuries) { injury in
+                Button(action: {
+                    selectedInjury = injury
+                }) {
+                    Text(injury.name)
+                }
+            }
+        } label: {
+            HStack {
+                Text(selectedInjury?.name ?? "Type of Injury")
+                Image(systemName: "chevron.down")
+                Spacer()
+            }.padding()
+                .background(RoundedRectangle(cornerRadius: 10).stroke())
+        }
         
-        TextField("Part of Body", text: $partOfBody)
-            .padding()
-            .background(RoundedRectangle(cornerRadius: 10).stroke())
+        //MARK: BODY PART
+        Menu {
+            ForEach(BodyParts) { bodyPart in
+                Button(action: {
+                    selectedBodyPart = bodyPart
+                }) {
+                    Text(bodyPart.name)
+                }
+            }
+        } label: {
+            HStack {
+                Text(selectedBodyPart?.name ?? "Part of Body")
+                Image(systemName: "chevron.down")
+                Spacer()
+            }.padding()
+                .background(RoundedRectangle(cornerRadius: 10).stroke())
+        }
         
-        TextField("Person's Gender", text: $personGender)
-            .padding()
-            .background(RoundedRectangle(cornerRadius: 10).stroke())
+        //MARK: GENDER
+        Menu {
+            ForEach(Genders) { gender in
+                Button(action: {
+                    selectedGender = gender
+                }) {
+                    Text(gender.name)
+                }
+            }
+        } label: {
+            HStack {
+                Text(selectedGender?.name ?? "Person's Gender")
+                Image(systemName: "chevron.down")
+                Spacer()
+            }.padding()
+                .background(RoundedRectangle(cornerRadius: 10).stroke())
+        }
+        
         
         TextField("Person's Age", text: $personAge)
             .padding()
@@ -203,25 +327,36 @@ struct ReportForm: View {
             .background(RoundedRectangle(cornerRadius: 10).stroke())
     }
     
+    //MARK: INCIDENTS
+    
     @ViewBuilder
     private func IncidentQuestions() -> some View {
         TextField("Describe the Incident", text: $incidentDetails)
             .padding()
             .background(RoundedRectangle(cornerRadius: 10).stroke())
         
-        TextField("Impact of Incident", text: $severity)
-            .padding()
-            .background(RoundedRectangle(cornerRadius: 10).stroke())
+        //MARK: SEVERITY
+        Menu {
+            ForEach(Severities) { sev in
+                Button(action: {
+                    selectedSeverity = sev
+                }) {
+                    Text(sev.name)
+                }
+            }
+        } label: {
+            HStack {
+                Text(selectedSeverity?.name ?? "Severity")
+                Image(systemName: "chevron.down")
+                Spacer()
+            }.padding()
+                .background(RoundedRectangle(cornerRadius: 10).stroke())
+        }
         
         Toggle("Was there any damage reported?", isOn: $injuryReported)
             .padding()
         
         TextField("Witness Names (if any)", text: $witnessNames)
-            .padding()
-            .background(RoundedRectangle(cornerRadius: 10).stroke())
-        
-        // Additional Questions
-        TextField("Quarter of Financial Year", text: $quarterOfFinancialYear)
             .padding()
             .background(RoundedRectangle(cornerRadius: 10).stroke())
         
@@ -237,33 +372,135 @@ struct ReportForm: View {
             .padding()
             .background(RoundedRectangle(cornerRadius: 10).stroke())
         
-        TextField("Job Title", text: $jobTitle)
-            .padding()
-            .background(RoundedRectangle(cornerRadius: 10).stroke())
+        //MARK: JOB TITLE
+        Menu {
+            ForEach(jobTitles) { job in
+                Button(action: {
+                    selectedJob = job
+                }) {
+                    Text(job.name)
+                }
+            }
+        } label: {
+            HStack {
+                Text(selectedJob?.name ?? "Job Title")
+                Image(systemName: "chevron.down")
+                Spacer()
+            }.padding()
+                .background(RoundedRectangle(cornerRadius: 10).stroke())
+        }
         
-        TextField("Incident Contract", text: $accidentContract) // You may want to specify differently for incidents
-            .padding()
-            .background(RoundedRectangle(cornerRadius: 10).stroke())
+        //MARK: CONTRACTS
+        Menu {
+            ForEach(contracts) { contract in
+                Button(action: {
+                    selectedContract = contract
+                }) {
+                    Text(contract.name)
+                }
+            }
+        } label: {
+            HStack {
+                Text(selectedContract?.name ?? "Contract")
+                Image(systemName: "chevron.down")
+                Spacer()
+            }.padding()
+                .background(RoundedRectangle(cornerRadius: 10).stroke())
+        }
         
         TextField("Who is Your Line Manager?", text: $lineManager)
             .padding()
             .background(RoundedRectangle(cornerRadius: 10).stroke())
         
-        TextField("Employment Details (Employee, Subcontractor, or Member of Public)", text: $employmentDetails)
-            .padding()
-            .background(RoundedRectangle(cornerRadius: 10).stroke())
+        //MARK: TYPE OF EMPLOYMENT
+        Menu {
+            ForEach(EmploymentDetails) { employ in
+                Button(action: {
+                    selectedEmployment = employ
+                }) {
+                    Text(employ.name)
+                }
+            }
+        } label: {
+            HStack {
+                Text(selectedEmployment?.name ?? "Employment Details")
+                Image(systemName: "chevron.down")
+                Spacer()
+            }.padding()
+                .background(RoundedRectangle(cornerRadius: 10).stroke())
+        }
         
-        TextField("Type of Injury", text: $typeOfInjury)
-            .padding()
-            .background(RoundedRectangle(cornerRadius: 10).stroke())
+        //MARK: TYPE OF INCIDENT
+        Menu {
+            ForEach(AccTypes) { type in
+                Button(action: {
+                    selectedType = type
+                }) {
+                    Text(type.name)
+                }
+            }
+        } label: {
+            HStack {
+                Text(selectedType?.name ?? "Incident Type")
+                Image(systemName: "chevron.down")
+                Spacer()
+            }.padding()
+                .background(RoundedRectangle(cornerRadius: 10).stroke())
+        }
         
-        TextField("Part of Body", text: $partOfBody)
-            .padding()
-            .background(RoundedRectangle(cornerRadius: 10).stroke())
+        //MARK: TYPE OF INJURY
+        Menu {
+            ForEach(Injuries) { injury in
+                Button(action: {
+                    selectedInjury = injury
+                }) {
+                    Text(injury.name)
+                }
+            }
+        } label: {
+            HStack {
+                Text(selectedInjury?.name ?? "Type of Injury")
+                Image(systemName: "chevron.down")
+                Spacer()
+            }.padding()
+                .background(RoundedRectangle(cornerRadius: 10).stroke())
+        }
         
-        TextField("Person's Gender", text: $personGender)
-            .padding()
-            .background(RoundedRectangle(cornerRadius: 10).stroke())
+        //MARK: BODY PART
+        Menu {
+            ForEach(BodyParts) { bodyPart in
+                Button(action: {
+                    selectedBodyPart = bodyPart
+                }) {
+                    Text(bodyPart.name)
+                }
+            }
+        } label: {
+            HStack {
+                Text(selectedBodyPart?.name ?? "Part of Body")
+                Image(systemName: "chevron.down")
+                Spacer()
+            }.padding()
+                .background(RoundedRectangle(cornerRadius: 10).stroke())
+        }
+        
+        //MARK: GENDER
+        Menu {
+            ForEach(Genders) { gender in
+                Button(action: {
+                    selectedGender = gender
+                }) {
+                    Text(gender.name)
+                }
+            }
+        } label: {
+            HStack {
+                Text(selectedGender?.name ?? "Person's Gender")
+                Image(systemName: "chevron.down")
+                Spacer()
+            }.padding()
+                .background(RoundedRectangle(cornerRadius: 10).stroke())
+        }
         
         TextField("Person's Age", text: $personAge)
             .padding()
@@ -280,9 +517,23 @@ struct ReportForm: View {
             .padding()
             .background(RoundedRectangle(cornerRadius: 10).stroke())
         
-        TextField("Potential Severity if it were an accident", text: $severity)
-            .padding()
-            .background(RoundedRectangle(cornerRadius: 10).stroke())
+        //MARK: SEVERITY
+        Menu {
+            ForEach(Severities) { sev in
+                Button(action: {
+                    selectedSeverity = sev
+                }) {
+                    Text(sev.name)
+                }
+            }
+        } label: {
+            HStack {
+                Text(selectedSeverity?.name ?? "Potential Severity")
+                Image(systemName: "chevron.down")
+                Spacer()
+            }.padding()
+                .background(RoundedRectangle(cornerRadius: 10).stroke())
+        }
         
         Toggle("Was there a safety breach involved?", isOn: $injuryReported)
             .padding()

@@ -18,7 +18,6 @@ struct Report {
     var severity: String
     var injuryReported: Bool
     var witnessNames: String
-    var quarterOfFinancialYear: String
     var timeOfAccident: String
     var address: String
     var phoneNumber: String
@@ -26,6 +25,7 @@ struct Report {
     var accidentContract: String
     var lineManager: String
     var employmentDetails: String
+    var typeOfReport: String
     var typeOfInjury: String
     var partOfBody: String
     var personGender: String
@@ -43,7 +43,6 @@ struct Report {
         severity: String,
         injuryReported: Bool,
         witnessNames: String,
-        quarterOfFinancialYear: String,
         timeOfAccident: String,
         address: String,
         phoneNumber: String,
@@ -51,6 +50,7 @@ struct Report {
         accidentContract: String,
         lineManager: String,
         employmentDetails: String,
+        typeOfReport: String,
         typeOfInjury: String,
         partOfBody: String,
         personGender: String,
@@ -67,7 +67,6 @@ struct Report {
         self.severity = severity
         self.injuryReported = injuryReported
         self.witnessNames = witnessNames
-        self.quarterOfFinancialYear = quarterOfFinancialYear
         self.timeOfAccident = timeOfAccident
         self.address = address
         self.phoneNumber = phoneNumber
@@ -75,6 +74,7 @@ struct Report {
         self.accidentContract = accidentContract
         self.lineManager = lineManager
         self.employmentDetails = employmentDetails
+        self.typeOfReport = typeOfReport
         self.typeOfInjury = typeOfInjury
         self.partOfBody = partOfBody
         self.personGender = personGender
@@ -82,3 +82,134 @@ struct Report {
         self.actionsTaken = actionsTaken
     }
 }
+
+//MARK: JOB TITLES
+
+struct JobTitle: Identifiable {
+    let id = UUID()
+    var name: String
+}
+
+let jobTitles = [
+    JobTitle(name: "Air Source Heat Pump"),
+    JobTitle(name: "Boiler / FTCH"),
+    JobTitle(name: "Brick Work"),
+    JobTitle(name: "Cavity Wall Insulation"),
+    JobTitle(name: "Customer Liaison Officer (CLO)"),
+    JobTitle(name: "Electric Storage Heaters"),
+    JobTitle(name: "Electrician"),
+    JobTitle(name: "External Wall Insulation"),
+    JobTitle(name: "Flat Roof Insulation"),
+    JobTitle(name: "Heating Engineer"),
+    JobTitle(name: "Internal Wall Insulation"),
+    JobTitle(name: "Joinery"),
+    JobTitle(name: "Labourer"),
+    JobTitle(name: "Loft Insulation"),
+    JobTitle(name: "Plastering"),
+    JobTitle(name: "Plumbing"),
+    JobTitle(name: "Room and Roof Insulation"),
+    JobTitle(name: "Scaffold"),
+    JobTitle(name: "Site Manager"),
+    JobTitle(name: "Sloping Ceiling Insulation"),
+    JobTitle(name: "Solar Installation"),
+    JobTitle(name: "Under Floor Insulation"),
+    JobTitle(name: "Windows and Door Installation")
+]
+
+//MARK: GENDER
+
+struct Gender: Identifiable {
+    let id = UUID()
+    var name: String
+}
+
+let Genders = [
+    Gender(name: "Male"),
+    Gender(name: "Female"),
+    Gender(name: "Other")
+]
+
+//MARK: TYPE OF ACCIDENT
+struct AccType: Identifiable {
+    let id = UUID()
+    var name: String
+}
+
+let AccTypes = [
+    AccType(name: "Manual Handling"),
+    AccType(name: "Fall from Height"),
+    AccType(name: "Impact or Collision"),
+    AccType(name: "Hit by moving object"),
+    AccType(name: "Injured by Machinery or Equipment"),
+    AccType(name: "Other")
+]
+
+//MARK: PART OF BODY
+struct BodyPart: Identifiable {
+    let id = UUID()
+    var name: String
+}
+
+let BodyParts = [
+    BodyPart(name: "Head"),
+    BodyPart(name: "Left Eye"),
+    BodyPart(name: "Right Eye"),
+    BodyPart(name: "Left Arm"),
+    BodyPart(name: "Left Hand"),
+    BodyPart(name: "Right Arm"),
+    BodyPart(name: "Right Hand"),
+    BodyPart(name: "Torso Front"),
+    BodyPart(name: "Torso Back"),
+    BodyPart(name: "Left Leg"),
+    BodyPart(name: "Left Foot"),
+    BodyPart(name: "Right Leg"),
+    BodyPart(name: "Right Foot"),
+]
+
+//MARK: TYPE OF INJURY
+struct Injury: Identifiable {
+    let id = UUID()
+    var name: String
+}
+
+let Injuries = [
+    Injury(name: "Fatality"),
+    Injury(name: "Loss of Consciousness caused by head injury or asphyxia"),
+    Injury(name: "Amputation(s)"),
+    Injury(name: "Any Injury Likely to lead to loss/reduction of sight"),
+    Injury(name: "Any crush injury to the head / torso causing damage to brain / internal organs"),
+    Injury(name: "Serious burns, which covers more than 10% of the body or causes significant damage to the eyes, respiratory systems or other vital organs"),
+    Injury(name: "Any Scalping requiring hospitalization"),
+    Injury(name: "Any other injury arising from working in an enclosed space which... leads to hypothermia, heat-induced illness, requires resuscitation or admittance to hospital for more than 24 hours."),
+    Injury(name: "Fracture"),
+    Injury(name: "Cuts and Abrasions"),
+    Injury(name: "Other"),
+]
+
+//MARK: EMPLOYMENT DETAILS
+
+struct Employment: Identifiable {
+    let id = UUID()
+    var name: String
+}
+
+let EmploymentDetails = [
+    Employment(name: "Employed"),
+    Employment(name: "Subcontractor"),
+    Employment(name: "Member of the Public")
+]
+
+//MARK: SEVERITY
+
+struct Severity: Identifiable {
+    let id = UUID()
+    let name: String
+}
+
+let Severities = [
+    Severity(name: "Minor"),
+    Severity(name: "Moderate"),
+    Severity(name: "Severe"),
+]
+
+//MARK:

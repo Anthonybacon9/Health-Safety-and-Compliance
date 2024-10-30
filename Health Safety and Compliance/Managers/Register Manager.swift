@@ -8,11 +8,22 @@
 import Foundation
 import FirebaseFirestore
 import SwiftUI
+import MapKit
+import CoreLocation
 
-struct User: Identifiable {
+struct User: Identifiable, Equatable {
     var id = UUID()
     var firstName: String
     var lastName: String
+    var location: CLLocationCoordinate2D?
+    
+    static func == (lhs: User, rhs: User) -> Bool {
+        return lhs.id == rhs.id &&
+               lhs.firstName == rhs.firstName &&
+               lhs.lastName == rhs.lastName &&
+               lhs.location?.latitude == rhs.location?.latitude &&
+               lhs.location?.longitude == rhs.location?.longitude
+    }
 }
 
 class SignInManager: ObservableObject {
@@ -27,13 +38,13 @@ class SignInManager: ObservableObject {
     private let lastName: String
     
     init(userId: String, firstName: String, lastName: String) {
-        self.userId = userId
-        self.firstName = firstName
-        self.lastName = lastName
-        
-        listenForSignInStatus()
-        listenForSignedInUsers()
-    }
+            self.userId = userId
+            self.firstName = firstName
+            self.lastName = lastName
+            
+            listenForSignInStatus()
+            listenForSignedInUsers()
+        }
     
     // Add a new sign-in record
     func addSignInRecord(time: String, location: String, status: String, contractName: String) {
@@ -51,28 +62,44 @@ class SignInManager: ObservableObject {
     }
     
     func fetchSignedInUsers() {
-        db.collection("users").whereField("isSignedIn", isEqualTo: true).getDocuments { [weak self] (querySnapshot, error) in
-            guard let self = self else { return }
-            
-            if let error = error {
-                print("Error fetching signed-in users: \(error.localizedDescription)")
-                return
-            }
-            
-            if let snapshot = querySnapshot {
+            db.collection("users").whereField("isSignedIn", isEqualTo: true).getDocuments { [weak self] (querySnapshot, error) in
+                guard let self = self else { return }
+                
+                if let error = error {
+                    print("Error fetching signed-in users: \(error.localizedDescription)")
+                    return
+                }
+                
+                guard let snapshot = querySnapshot else {
+                    print("No signed-in users found.")
+                    return
+                }
+
                 DispatchQueue.main.async {
+                    // Map the fetched documents to User objects
                     self.signedInUsers = snapshot.documents.compactMap { document in
                         let data = document.data()
-                        if let firstName = data["firstName"] as? String,
-                           let lastName = data["lastName"] as? String {
-                            return User(firstName: firstName, lastName: lastName)
+                        
+                        // Check and extract firstName, lastName, and signInLocation
+                        guard let firstName = data["firstName"] as? String,
+                              let lastName = data["lastName"] as? String,
+                              let signInLocation = data["signInLocation"] as? [String: Any],
+                              let latitude = signInLocation["latitude"] as? CLLocationDegrees,
+                              let longitude = signInLocation["longitude"] as? CLLocationDegrees else {
+                            print("Error parsing user data for document: \(document.documentID)")
+                            return nil
                         }
-                        return nil
+                        
+                        // Create CLLocationCoordinate2D object
+                        let location = CLLocationCoordinate2D(latitude: latitude, longitude: longitude)
+                        
+                        // Create and return User object
+                        print("Fetched user: \(firstName) \(lastName), location: \(latitude), \(longitude)")
+                        return User(firstName: firstName, lastName: lastName, location: location)
                     }
                 }
             }
         }
-    }
     
     private func listenForSignedInUsers() {
         db.collection("users").whereField("isSignedIn", isEqualTo: true).addSnapshotListener { [weak self] querySnapshot, error in
