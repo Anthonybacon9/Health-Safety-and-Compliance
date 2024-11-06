@@ -23,6 +23,9 @@ struct ContentView: View {
     
     @State private var selectedTab = 0
     @AppStorage("isAdmin") var isAdmin: Bool = false
+    @AppStorage("username") var username: String = "" // Add username storage
+    @AppStorage("isLoggedIn") var isLoggedIn: Bool = false // Add logged-in status storage
+    @State private var loginError: String?
     
     var body: some View {
 //        NavigationView {

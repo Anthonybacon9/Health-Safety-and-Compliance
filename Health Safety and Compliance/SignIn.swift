@@ -38,8 +38,8 @@ struct SignIn: View {
     
     @AppStorage("signedIn") var signedIn: Bool = false
     @AppStorage("isAuthenticated") var isAuthenticated: Bool = false
-    @AppStorage("firstName") var firstName: String = ""
-    @AppStorage("lastName") var lastName: String = ""
+    @AppStorage("firstName") var firstName: String = "Test"
+    @AppStorage("lastName") var lastName: String = "Test"
     @AppStorage("uid") var userId: String = "1"
     @AppStorage("isAdmin") var isAdmin: Bool = false
     
@@ -65,56 +65,45 @@ struct SignIn: View {
     
     
     fileprivate func setSignInStatus(isSignedIn: Bool) {
-        guard let userId = Auth.auth().currentUser?.uid else { return }
-        let db = Firestore.firestore()
+            guard let userId = Auth.auth().currentUser?.uid else { return }
+            let db = Firestore.firestore()
 
-        // Create a timestamp for the current date and time
-        let lastUpdated = Timestamp(date: Date())
-        let contractName = selectedContract?.name ?? "No Contract Selected"
+            // Create a timestamp for the current date and time
+            let lastUpdated = Timestamp(date: Date())
+            let contractName = selectedContract?.name ?? "No Contract Selected"
 
-        if let location = locationManager.userLocation {
-            let latitude = location.coordinate.latitude
-            let longitude = location.coordinate.longitude
-            let signInLocation: [String: Any] = [
-                "latitude": latitude,
-                "longitude": longitude
-            ]
-            let signInAddress = locationManager.userAddress
+            if let location = locationManager.userLocation {
+                let latitude = location.coordinate.latitude
+                let longitude = location.coordinate.longitude
+                let signInLocation: [String: Any] = [
+                    "latitude": latitude,
+                    "longitude": longitude
+                ]
+                let signInAddress = locationManager.userAddress ?? "none"
 
-            // Update both 'isSignedIn' and 'lastUpdated' fields
-            if isSignedIn {
-                db.collection("users").document(userId).updateData([
+                // Update both 'isSignedIn' and 'lastUpdated' fields
+                var updateData: [String: Any] = [
                     "isSignedIn": isSignedIn,
                     "lastUpdated": lastUpdated,
-                    "contract": contractName,
-                    "signInLocation": signInLocation,
-                    "signInAddress": signInAddress ?? "none"
-                ]) { error in
+                    "contract": isSignedIn ? contractName : "None",
+                    "signInLocation": isSignedIn ? signInLocation : "None",
+                    "signInAddress": isSignedIn ? signInAddress : "None"
+                ]
+
+                db.collection("users").document(userId).updateData(updateData) { error in
                     if let error = error {
-                        print("Error updating sign-in status: \(error.localizedDescription)")
+                        // Show error alert
+                        alertMessage = "Error updating sign-in status: \(error.localizedDescription)"
+                        showAlert = true
                     } else {
                         print("User's sign-in status updated to \(isSignedIn ? "true" : "false") at \(lastUpdated).")
                     }
                 }
             } else {
-                db.collection("users").document(userId).updateData([
-                    "isSignedIn": isSignedIn,
-                    "lastUpdated": lastUpdated,
-                    "contract": "None",
-                    "signInLocation": "None", // Consider using a similar dictionary format if desired
-                    "signInAddress": "None"
-                ]) { error in
-                    if let error = error {
-                        print("Error updating sign-in status: \(error.localizedDescription)")
-                    } else {
-                        print("User's sign-in status updated to \(isSignedIn ? "true" : "false") at \(lastUpdated).")
-                    }
-                }
+                alertMessage = "User location is unavailable."
+                showAlert = true
             }
-        } else {
-            print("User location is unavailable.")
         }
-    }
     
     var body: some View {
         NavigationView {

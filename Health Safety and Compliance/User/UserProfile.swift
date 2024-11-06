@@ -12,7 +12,7 @@ struct UserProfile: View {
     @State private var confirmPassword: String = ""
     @AppStorage("firstName") var firstName: String = ""
     @AppStorage("lastName") var lastName: String = ""
-    @AppStorage("uid") var userId: String = ""
+    @AppStorage("uid") var userId: String = "1"
     @AppStorage("isAdmin") var isAdmin: Bool = false
     
     @State private var isCreatingAccount: Bool = false
@@ -24,6 +24,11 @@ struct UserProfile: View {
     @State private var inputInviteCode: String = ""
     @State private var generatedInviteCode: String = ""
     @State private var isShowingInviteCodeError: Bool = false
+    
+    // New fields for subcontractor selection
+    @State private var isSubcontractor: Bool = false
+    @State private var subcontractors: [String] = [] // List of subcontractor names
+    @State private var selectedSubcontractor: String? = nil // Selected subcontractor
     
     var body: some View {
         VStack {
@@ -164,6 +169,7 @@ struct UserProfile: View {
                 if isCreatingAccount {
                     // Sign-Up Form
                     VStack(spacing: 20) {
+                        
                         Text("Create Account")
                             .font(.title)
                             .fontWeight(.bold)
@@ -194,6 +200,30 @@ struct UserProfile: View {
                         SecureField("Confirm Password", text: $confirmPassword)
                             .textFieldStyle(RoundedBorderTextFieldStyle())
                         
+                        // Subcontractor toggle
+                        Toggle("Are you a subcontractor?", isOn: $isSubcontractor)
+                            .padding()
+
+                        // Subcontractor dropdown, only shown if `isSubcontractor` is true
+                        // Subcontractor dropdown, only shown if `isSubcontractor` is true
+                        if isSubcontractor {
+                            VStack {
+                                Picker("Select Subcontractor", selection: $selectedSubcontractor) {
+                                    ForEach(subcontractors, id: \.self) { subcontractor in
+                                        Text(subcontractor).tag(subcontractor as String?) // Ensure correct binding
+                                    }
+                                }
+                                .pickerStyle(MenuPickerStyle())
+                                .padding()
+                                .onChange(of: selectedSubcontractor) { newValue in
+                                    print("Selected Subcontractor changed to: \(newValue ?? "none")")
+                                }
+                            }
+                        } else {
+                            Text("Next Energy Employee")
+                                .foregroundColor(.gray)
+                        }
+                        
                         if let error = errorMessage {
                             Text(error)
                                 .foregroundColor(.red)
@@ -215,6 +245,9 @@ struct UserProfile: View {
                         }
                     }
                     .padding()
+                    .onAppear {
+                        fetchSubcontractors() // Load subcontractors from Firestore on appear
+                    }
                 } else {
                     // Sign-In Form
                     VStack(spacing: 20) {
@@ -260,8 +293,34 @@ struct UserProfile: View {
                 username = user.displayName ?? user.email ?? "Unknown User"
                 userId = user.uid // Store the uid
                 isAuthenticated = true
+            } else {
+                // Reset stored values if no user is authenticated
+                resetAppStorage()
             }
         }
+    }
+    
+    private func fetchSubcontractors() {
+        let db = Firestore.firestore()
+        db.collection("subcontractors").getDocuments { snapshot, error in
+            if let error = error {
+                print("Error fetching subcontractors: \(error.localizedDescription)")
+                return
+            }
+            if let documents = snapshot?.documents {
+                // Store subcontractor names in the subcontractors array
+                self.subcontractors = documents.compactMap { $0["name"] as? String }
+            }
+        }
+    }
+    
+    private func resetAppStorage() {
+        username = ""
+        isAuthenticated = false
+        firstName = ""
+        lastName = ""
+        userId = "1"
+        isAdmin = false
     }
     
     private func generateInviteCode() {
@@ -379,7 +438,8 @@ struct UserProfile: View {
             "uid": userId,
             "isAdmin": false,
             "invCode" : inputInviteCode,
-            "isSignedIn" : false
+            "isSignedIn" : false,
+            "employer" : selectedSubcontractor ?? "None",
         ]
         
         db.collection("users").document(userId).setData(userData) { error in
